@@ -5,6 +5,10 @@
 # Download TiddlyWiki from https://tiddlywiki.com/empty.html and
 # save it in its own subfolder as an .html file but NOT index.html.
 #
+# Have Ruby, and webrick ruby gem installed.
+# https://www.ruby-lang.org/en/documentation/installation/
+# https://rubygems.org/gems/webrick/
+# 
 # From the command line (e.g. Terminal on Mac):
 # /usr/bin/wget https://tiddlywiki.com/empty.html -P folder/
 # /usr/bin/ruby tw5-server.rb folder/empty.html
@@ -34,7 +38,7 @@ module WEBrick
          def do_PUT(req, res)
             file = "#{@config[:DocumentRoot]}#{req.path}".sub(/[\/]$/,'')
             res.body = ''
-            unless Dir.exists? BACKUP_DIR
+            unless Dir.exist? BACKUP_DIR
                Dir.mkdir BACKUP_DIR
             end
             FileUtils.cp(file, "#{BACKUP_DIR}/#{File.basename(file, '.html')}.#{Time.now.to_i.to_s}.html")
@@ -51,11 +55,15 @@ module WEBrick
    end
 end
 
-server = WEBrick::HTTPServer.new({:Port => 8000, :DocumentRoot => root, :BindAddress => "127.0.0.1"})
+BIND_ADDRESS = "127.0.0.1" # localhost
+PORT = 8000
+
+server = WEBrick::HTTPServer.new({:Port => PORT, :DocumentRoot => root, :BindAddress => BIND_ADDRESS})
 
 trap "INT" do
    puts "Shutting down..."
    server.shutdown
 end
 
+puts "Serving on http://#{BIND_ADDRESS}:#{PORT}"
 server.start
